@@ -1,0 +1,45 @@
+.THIS {
+}
+
+.THIS .custom-button:hover {
+   /*background-color: #3385ff !important;*/
+     color: #1B5297;
+    background: none;
+}
+
+
+
+
+
+
+
+
+
+.THIS .custom-header-font{
+    font-size: 180%;
+    font-weight: 900;
+}
+.THIS .custom-button{
+    background-color: #1B5297;
+    
+    width: 250px;
+    height: 45px;
+    border-radius: 8px;
+    color: #FFFFFF;
+    padding: 1px 1px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 1px 1px;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    cursor: pointer;
+  }
+
+.THIS .custom-bg-color{
+    background-color: #F3F2F2;
+}
+.THIS .custom-table-td-width{
+    width: 40%
+}
