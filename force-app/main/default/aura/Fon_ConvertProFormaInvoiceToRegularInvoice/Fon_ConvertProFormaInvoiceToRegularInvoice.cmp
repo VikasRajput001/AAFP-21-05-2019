@@ -1,0 +1,33 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" access="global" controller="Fon_proformaInvoiceToRegularInvoice" >
+	 <aura:attribute name="myMap" type="Map" />
+ <aura:attribute name="msg" type="String"/>
+    <aura:attribute name="recordId" type="Id"  default="a1FZ0000001YXoQ"/>
+     <aura:attribute name="showError" type="Boolean" default="false"/>
+     <!--<aura:attribute name="ReturnData" type="Object" />-->
+     <aura:attribute name="showSpinner" type="Boolean" default="false" />
+     <!--<aura:handler name="init" value="{!this}" action="{!c.init}" />-->
+    <lightning:button variant="brand" label="Continue" title="Brand action" onclick="{! c.testabc }" />
+     <aura:if isTrue="{!v.showError}">
+         <div class="demo-only demo-only_viewport" style="height:640px">
+             <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                 <div class="slds-modal__container">
+                     <header class="slds-modal__header">
+                         <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                             <lightning:buttonIcon iconName="utility:close" variant="bare-inverse" onclick="{! c.closeClick }" alternativeText="Cancel" size="30px" />
+                             <span class="slds-assistive-text">Close</span>
+                         </button>
+                         <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Error</h2>
+                     </header>
+                     <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                       <!--  <p>This Proforma Invoice Cannot be Converted into an Invoice. Incompatible Subscription Plan</p>-->
+                         <p >{!v.msg}</p>
+                     </div>
+                     <footer class="slds-modal__footer">
+                          <lightning:button variant="brand" label="Continue" title="Brand action" onclick="{! c.navigateBackToHomePage }" />
+                     </footer>
+                 </div>
+             </section>
+             <div class="slds-backdrop slds-backdrop_open"></div>
+         </div>
+     </aura:if> 
+</aura:component>

@@ -49,8 +49,6 @@ public class Fon_ReceiptServiceTest {
         
         Test.startTest();
         insert rec;
-        insertReceipt.add(rec);
-        Fon_ReceiptService.updateDepositeAccountBI(insertReceipt);
         
         List<OrderApi__Receipt__c> recp=[select OrderApi__Deposit_Account__c from OrderApi__Receipt__c where id=:rec.Id];
         system.assertEquals(bg.Accounts_Payable_Account__c, recp[0].OrderApi__Deposit_Account__c);

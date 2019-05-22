@@ -8,69 +8,86 @@
         <!--<c:fon_MembershipManagementInterfaceLWC recordId="{!v.recordId}"> </c:fon_MembershipManagementInterfaceLWC> -->
     
     
+    <aura:html tag="style">
+        .slds-spinner_container{
+            background: transparent !important;
+        }
+    
+        .modal-body {
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        .slds-modal__header--empty {
+            display: none !important;
+        }
+        .modal-container{
+            width: 60% !important;
+            max-width: initial !important;
+        }
+    </aura:html>   
+    
+    
+    
     <aura:if isTrue="{!v.enableMainFrame}">
     	
       <!--  <div style="border: 2px solid black;">-->
-<div >
+      
         
-        
-        <div class="custom-bg-color">			
-            <div class="slds-grid slds-wrap custom-bg-color ">
-                <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_xx-small">
+		<div style="border: 2px solid black;" class="slds-modal--large">
+            <div class="custom-bg-color">			
+                <div class="slds-grid slds-wrap custom-bg-color ">
+                    <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_xx-small">
+                        
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-align_absolute-center">
+                        <span class="custom-header-font">Membership Management Interface</span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_x-large">
+                        
+                    </div>
                     
-                </div>
-                <div class="slds-col slds-size_1-of-1 slds-align_absolute-center">
-                    <span class="custom-header-font">Membership Management Interface</span>
-                </div>
-                <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_x-large">
+                    <div class="slds-col slds-size_5-of-12">
+                        <span><button class="slds-button slds-button_brand slds-float_right custom-button" onclick="{!c.navigateNext}">New Membership</button></span>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
+                        <span></span>
+                    </div>
+                    <div class="slds-col slds-size_5-of-12">
+                        <span><button class="slds-button slds-button_brand slds-float_left custom-button">Cancel Membership</button></span>
+                    </div>
                     
-                </div>
-                
-                 
-                
-                <div class="slds-col slds-size_5-of-12">
-                    <span><button class="slds-button slds-button_brand slds-float_right custom-button" onclick="{!c.navigateNext}">New Membership</button></span>
-                </div>
-                <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
-                    <span></span>
-                </div>
-                <div class="slds-col slds-size_5-of-12">
-                    <span><button class="slds-button slds-button_brand slds-float_left custom-button">Cancel Membership</button></span>
-                </div>
-                
-                <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_x-large">
+                    <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_x-large">
+                        
+                    </div>
                     
-                </div>
-                
-                <div class="slds-col slds-size_5-of-12">
-                    <span><button class="slds-button slds-button_brand slds-float_right custom-button">Change Member Type</button></span>
-                </div>
-                <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
-                    <span></span>
-                </div>
-                <div class="slds-col slds-size_5-of-12">
-                    <span><button class="slds-button slds-button_brand slds-float_left custom-button">Change State/localType</button></span>
-                </div>
-                
-                <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_medium">
+                    <div class="slds-col slds-size_5-of-12">
+                        <span><button class="slds-button slds-button_brand slds-float_right custom-button">Change Member Type</button></span>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
+                        <span></span>
+                    </div>
+                    <div class="slds-col slds-size_5-of-12">
+                        <span><button class="slds-button slds-button_brand slds-float_left custom-button">Change State/localType</button></span>
+                    </div>
                     
-                </div>
-                
-                <div class="slds-col slds-size_1-of-1 slds-align_absolute-center">
-                    <span><button class="slds-button slds-button_brand slds-float_right custom-button">Change Subscription Plan</button></span>
-                </div>
-                
-                <div class="slds-col slds-size_1-of-1 slds-m-top_medium">
-                    <span></span>
-                </div>
+                    <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_medium">
+                        
+                    </div>
+                    
+                    <div class="slds-col slds-size_1-of-1 slds-align_absolute-center">
+                        <span><button class="slds-button slds-button_brand slds-float_right custom-button">Change Subscription Plan</button></span>
+                    </div>
+                    
+                    <div class="slds-col slds-size_1-of-1 slds-m-top_medium">
+                        <span></span>
+                    </div>
+                </div>	
             </div>	
-        </div>	
         
-        </div>
+      	</div>
         
-        
-    	<aura:set attribute="else">
-        	 <c:Fon_NewMembershipCmp></c:Fon_NewMembershipCmp>
+        <aura:set attribute="else">
+            <c:Fon_NewMembershipCmp></c:Fon_NewMembershipCmp>
         </aura:set>
     </aura:if> 
     
