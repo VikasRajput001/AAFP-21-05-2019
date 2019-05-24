@@ -1,13 +1,10 @@
 <aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:isUrlAddressable" 
-                access="global" >
+                access="global" controller="Fon_MembershipManagementInterfaceCtrl">
     <ltng:require styles="{!$Resource.Expand_Model_Width + '/Expand_Model_Width.css'}"/>
 	<aura:attribute name="recordId" type="String" />
     <aura:attribute name="enableMainFrame" type="Boolean" default="true"/>
-    
-    
-        <!--<c:fon_MembershipManagementInterfaceLWC recordId="{!v.recordId}"> </c:fon_MembershipManagementInterfaceLWC> -->
-    
-    
+	<aura:attribute name="dynamicMsgMAP" type="Map" />
+	    
     <aura:html tag="style">
         .slds-spinner_container{
             background: transparent !important;
@@ -26,14 +23,10 @@
         }
     </aura:html>   
     
-    
-    
+    <lightning:spinner aura:id="serverStatusSpinner" class="slds-hide"/>
     <aura:if isTrue="{!v.enableMainFrame}">
-    	
       <!--  <div style="border: 2px solid black;">-->
-      
-        
-		<div style="border: 2px solid black;" class="slds-modal--large">
+		<div style="border: 2px solid black;" class="slds-modal--large" aura:id="mainFrameDiv">
             <div class="custom-bg-color">			
                 <div class="slds-grid slds-wrap custom-bg-color ">
                     <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_xx-small">
@@ -53,7 +46,7 @@
                         <span></span>
                     </div>
                     <div class="slds-col slds-size_5-of-12">
-                        <span><button class="slds-button slds-button_brand slds-float_left custom-button">Cancel Membership</button></span>
+                        <span><button class="slds-button slds-button_brand slds-float_left custom-button" onclick="{!c.cancelMembership}">Cancel Membership</button></span>
                     </div>
                     
                     <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_x-large">

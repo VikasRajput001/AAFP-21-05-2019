@@ -27,7 +27,7 @@
                 }
         }));
         $A.enqueueAction(action); 
-    },
+    }, 
     recallDataService: function(cmp, event, helper) {
         var div = cmp.find('custompaymentmethod');
         return $A.createComponent(
@@ -43,6 +43,7 @@
                     return;
                 }
                 div.set('v.body', [newCmp]);
+                
             }
         );
     },

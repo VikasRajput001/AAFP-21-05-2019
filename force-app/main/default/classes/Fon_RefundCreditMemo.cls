@@ -5,6 +5,8 @@ public class Fon_RefundCreditMemo {
     Set<Id> existingTransactionIds = new Set<Id>();
     List<OrderApi__Item__c> creditMemoRefundItem = new List<OrderApi__Item__c>();
     
+    
+    
     public Fon_RefundCreditMemo(ApexPages.StandardController controller){
         creditMemoRefundItem= [select id from OrderApi__Item__c where Name='Credit Memo Refund Item' And OrderApi__Is_Active__c=true];
         creditMemoId=controller.getId();//Current Record Id
@@ -23,6 +25,7 @@ public class Fon_RefundCreditMemo {
     }
     
     public PageReference createCreditMemoline(){
+        Id newReceiptId;
         if(creditMemoRecord.size()>0){
             //Creating Credit Memo line
             OrderApi__Credit_Memo_Line__c cml = new OrderApi__Credit_Memo_Line__c();
@@ -37,25 +40,35 @@ public class Fon_RefundCreditMemo {
             //The transactions created as a result of posting will be deleted
             List<OrderApi__Transaction__c> trans= [select id from OrderApi__Transaction__c where Id Not in :existingTransactionIds And OrderApi__Credit_Memo__c=:creditMemoId];
             if(trans.size()>0){
+                system.debug('jmd trans-->'+trans.size());
                 Delete trans;
             }
             //A new Refund receipt will be created from this receipt
-            createRefundReceipt();            
+            newReceiptId=createRefundReceipt();            
         }
-        PageReference pr= new PageReference('/'+creditMemoId);
+        PageReference pr;
+        if(newReceiptId!=Null){
+            pr= new PageReference('/'+newReceiptId);
+        }
+        else{
+            pr= new PageReference('/'+creditMemoId);
+        }
+        
         pr.setRedirect(true);
         return pr;
     }
     
-    public void createRefundReceipt(){
+    public Id createRefundReceipt(){
         OrderApi__Receipt__c receipt = new OrderApi__Receipt__c();
         receipt.OrderApi__Type__c='Refund';
         receipt.OrderApi__Contact__c=creditMemoRecord[0].Fon_Receipt__r.OrderApi__Contact__c;
         receipt.OrderApi__Account__c=creditMemoRecord[0].Fon_Receipt__r.OrderApi__Account__c;
         receipt.OrderApi__Business_Group__c=creditMemoRecord[0].Fon_Receipt__r.OrderApi__Business_Group__c;
         receipt.OrderApi__Memo__c='CreditMemo Refunded';//The Memo field on the receipt will be populated as ‘Credit Memo Refunded’
-        receipt.OrderApi__Is_Posted__c=true;//The Receipt will be posted
         insert receipt;
+        
+        receipt.OrderApi__Is_Posted__c=true;//The Receipt will be posted
+        update receipt;
         
         //A new Receipt line will be created under the Receipt 
         OrderApi__Receipt_Line__c rl= new OrderApi__Receipt_Line__c();
@@ -63,9 +76,17 @@ public class Fon_RefundCreditMemo {
         rl.OrderApi__Item__c=creditMemoRefundItem[0].Id;//the lookup to the ‘Credit Memo Refund Item’ on the Item field
         insert rl;
         
+        updateTransaction(receipt.Id,creditMemoId);
+        
+        return receipt.Id;
+    }
+    
+    @future
+    public static void updateTransaction(Id receiptId,Id creditMemoId){
         //Once all the transactions are created as a result of posting the Receipt the lookup field ‘Credit Memo’ will be updated
         //on all the Transactions with the Credit Memo found and modified.
-        List<OrderApi__Transaction__c> receiprTransactions= [select OrderApi__Credit_Memo__c from OrderApi__Transaction__c where OrderApi__Receipt__c=:receipt.Id];
+        List<OrderApi__Transaction__c> receiprTransactions= [select OrderApi__Credit_Memo__c from OrderApi__Transaction__c where OrderApi__Receipt__c=:receiptId];
+        system.debug('jmd receiprTransactions-->'+receiprTransactions.size());
         if(receiprTransactions.size()>0){
             for(OrderApi__Transaction__c trns:receiprTransactions){
                 trns.OrderApi__Credit_Memo__c=creditMemoId;

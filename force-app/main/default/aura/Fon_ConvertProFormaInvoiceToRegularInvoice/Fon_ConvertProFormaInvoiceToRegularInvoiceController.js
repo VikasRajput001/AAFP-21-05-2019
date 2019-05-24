@@ -1,5 +1,6 @@
 ({
-    testabc : function(component, event, helper) {
+    init : function(component, event, helper) {
+        component.set("v.showSpinner",true);
         var recordId = component.get("v.recordId");
         var action = component.get("c.convertProformaInvoice");
         action.setParams({
@@ -8,54 +9,40 @@
         action.setCallback(this, function(response){
             var state = response.getState();
             if (state == "SUCCESS") {
-            var ReturnValue= response.getReturnValue();
+                component.set("v.showSpinner",false);    
+                var ReturnValue= response.getReturnValue();
                 component.set("v.myMap",ReturnValue);
                 var mp=component.get("v.myMap");
                 var msg = mp['true'];
-               
+                
                 if(msg){
                     //error
-                     
-                    console.log(msg);
                     component.set("v.showError",true);
                     component.set("v.msg",msg);
-                    
-                    
-                }
-                else{
+                }else{
+                    $A.util.removeClass
+                    component.set("v.showToast",true);
+                    component.set("v.status",'The Record has been Updated Successfully');
+                    window.setTimeout(
+                        $A.getCallback(function () {
+                            component.set("v.showToast", false);
+                            component.set("v.status", "");
+                        }), 5000
+                    );
                     //redirect url
-                    console.log(msg);
-                     helper.onSuccess(component, event, helper);
-                    var urlEvent = $A.get("e.force:navigateToURL");
-                    urlEvent.setParams({
-                          "url": "/lightning/r/OrderApi__Sales_Order__c/"+component.get("v.recordId")+"/view?0.source=alohaHeader"
-                      //  "url": '/'+component.get("v.recordId")
-                    });
-                    urlEvent.fire();
+                    helper.navigateBackToHomePage(component, event, helper);
                 }
+            }else if(state == "ERROR"){
+                 alert('error');
             }
-           
-        });            
-        $A.enqueueAction(action);      
+        });  
+        
+        $A.enqueueAction(action); 
+        
     },
-    navigateBackToHomePage:function(component, event, helper) {
-        component.get("v.showError",false);
-        var urlEvent = $A.get("e.force:navigateToURL");
-        urlEvent.setParams({
-              "url": "/lightning/r/OrderApi__Sales_Order__c/"+component.get("v.recordId")+"/view?0.source=alohaHeader"
-          //  "url": '/'+component.get("v.recordId")
-        });
-        urlEvent.fire();
-    },
-    
     closeClick:function(component, event, helper) {
         component.get("v.showError",false);
-        var urlEvent = $A.get("e.force:navigateToURL");
-        urlEvent.setParams({
-              "url": "/lightning/r/OrderApi__Sales_Order__c/"+component.get("v.recordId")+"/view?0.source=alohaHeader"
-            //"url": '/'+component.get("v.recordId")
-        });
-        urlEvent.fire();
+        helper.navigateBackToHomePage(component, event, helper);
     }
     
     
