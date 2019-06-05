@@ -19,12 +19,11 @@ public class Fon_NewMembershipController_Test {
         insert con;
         
         Fon_Membership_Staging__c memStag = new Fon_Membership_Staging__c(
-        Fon_Activation_Date__c = System.today(),
+        Fon_Membership_Activation_Date__c = System.today(),
         Fon_Chapter_Join_Date__c = System.today(),
         Fon_Dues_Paid_by_Chapter__c = 12,
         Fon_Dues_Paid_by_Residency_Program__c = 23,
         Fon_Join_Date__c = System.today(),
-        Fon_Membership_Activation_Date__c = System.today(),
         Fon_Membership_State_Chapter__c = 'Virginia',
         Fon_Membership_Type__c = 'Resident',
         Fon_Staging_Status__c = 'New',

@@ -4,6 +4,11 @@
     <packageVersions>
         <majorNumber>70</majorNumber>
         <minorNumber>0</minorNumber>
+        <namespace>Framework</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>70</majorNumber>
+        <minorNumber>0</minorNumber>
         <namespace>OrderApi</namespace>
     </packageVersions>
     <status>Active</status>

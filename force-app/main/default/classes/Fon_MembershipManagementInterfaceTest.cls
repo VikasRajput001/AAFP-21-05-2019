@@ -46,7 +46,7 @@ public class Fon_MembershipManagementInterfaceTest {
         member.Fon_Dues_Paid_by_Residency_Program__c =18;
         member.Fon_Join_Date__c = system.today();
         member.Fon_Chapter_Join_Date__c =system.today();
-        member.Fon_Activation_Date__c=system.today();
+        
         member.Fon_Contact__c=con.Id;
         member.Fon_Subscription_Plan__c='1/1-12/31,single paymt';
         insert member;
@@ -66,8 +66,9 @@ public class Fon_MembershipManagementInterfaceTest {
         insert inv;
         
        Test.startTest();
-       Fon_MembershipManagementInterfaceCtrl.cancellingMembership(con.Id);
-       Fon_MembershipManagementInterfaceCtrl.updateSalesOrder(con.Id);
+       Fon_MembershipManagementInterfaceCtrl.cancellingMembership(con.Id, 'Demo');
+       Fon_MembershipManagementInterfaceCtrl.updateSubsAndSalesOrder(con.Id, 'Demo');
+       Fon_MembershipManagementInterfaceCtrl.fetchingActiveMembership(con.Id);
        Test.stopTest();          
   }
 

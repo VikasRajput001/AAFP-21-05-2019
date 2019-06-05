@@ -2,7 +2,8 @@
     cancelMembershipHelper : function(component, event, helper) {
 		var action = component.get("c.cancellingMembership");
         action.setParams({
-            recordId : component.get("v.recordId")
+            recordId : component.get("v.recordId"),
+            reason : component.get("v.reasonForCancelling")
         });
         action.setCallback(this,function(result){            
             if (result.getState() == 'SUCCESS') {
@@ -15,7 +16,8 @@
                 }else{
                     this.showToastMessage("warning", "Warning!", "No active membership is found.");
                 }
-            }else {
+            }
+            else {
                 this.showToastMessage("error", "Error!", "Something went wrong. Please contact to your admin.");
             }
             $A.get("e.force:closeQuickAction").fire();
@@ -28,10 +30,27 @@
         toastEvent.setParams({
             type: type,
             mode: 'dismissible',
-            duration:'5000',
+            duration:'2000',
             title: title,
             message: message
         });
         toastEvent.fire();
+    },
+    fetchActiveMembership : function(component, event, helper) {
+        var action = component.get("c.fetchingActiveMembership");
+        action.setParams({
+            recordId : component.get("v.recordId")
+        });
+        action.setCallback(this,function(result){            
+            if (result.getState() == 'SUCCESS') {
+                var membershipId = result.getReturnValue();
+                component.set("v.activeMembershipId",membershipId);
+            }else {
+                this.showToastMessage("error", "Error!", "Something went wrong. Please contact to your admin.");
+            }
+            //$A.get("e.force:closeQuickAction").fire();
+        });
+		$A.enqueueAction(action);
     }
+    
 })

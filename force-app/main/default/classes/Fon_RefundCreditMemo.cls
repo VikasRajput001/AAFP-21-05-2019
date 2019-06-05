@@ -65,6 +65,7 @@ public class Fon_RefundCreditMemo {
         receipt.OrderApi__Account__c=creditMemoRecord[0].Fon_Receipt__r.OrderApi__Account__c;
         receipt.OrderApi__Business_Group__c=creditMemoRecord[0].Fon_Receipt__r.OrderApi__Business_Group__c;
         receipt.OrderApi__Memo__c='CreditMemo Refunded';//The Memo field on the receipt will be populated as ‘Credit Memo Refunded’
+        receipt.Fon_Credit_Memo__c=creditMemoId;
         insert receipt;
         
         receipt.OrderApi__Is_Posted__c=true;//The Receipt will be posted
@@ -76,12 +77,12 @@ public class Fon_RefundCreditMemo {
         rl.OrderApi__Item__c=creditMemoRefundItem[0].Id;//the lookup to the ‘Credit Memo Refund Item’ on the Item field
         insert rl;
         
-        updateTransaction(receipt.Id,creditMemoId);
+       // updateTransaction(receipt.Id,creditMemoId);
         
         return receipt.Id;
     }
     
-    @future
+  /*  @future
     public static void updateTransaction(Id receiptId,Id creditMemoId){
         //Once all the transactions are created as a result of posting the Receipt the lookup field ‘Credit Memo’ will be updated
         //on all the Transactions with the Credit Memo found and modified.
@@ -93,5 +94,5 @@ public class Fon_RefundCreditMemo {
             }
             update receiprTransactions;
         }
-    }
+    }*/
 }
