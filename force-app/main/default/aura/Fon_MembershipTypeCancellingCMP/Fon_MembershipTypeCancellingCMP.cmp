@@ -33,7 +33,7 @@
                                     <lightning:button variant="brand" type="submit" name="Deactivate Membership" label="Deactivate Membership" />
 									<lightning:button variant="neutral" name="Cancel" label="Cancel" onclick="{! c.closeModal}"/>
 								</div>
-							</lightning:recordEditForm>
+						</lightning:recordEditForm>
                     </div>
                 </div>
             </section>
@@ -45,7 +45,7 @@
                      class="slds-modal slds-fade-in-open">
 				<div class="slds-modal__container">
 					<header class="slds-modal__header">
-						<button class="slds-button slds-button--icon-inverse slds-modal__close" onclick="{!c.closeModalView}">
+						<button class="slds-button slds-button--icon-inverse slds-modal__close" onclick="{!c.closeModal}">
 							<lightning:icon iconName="utility:close" size="medium" variant="bare"/>
 							<span class="slds-assistive-text">Close</span>
 						</button>

@@ -43,9 +43,9 @@ public without sharing class Fon_CustomPaymentMethodCtrl{
         try {
             user u = [SELECT ContactId,Id FROM User where id = : userinfo.getuserid()];
             if(u !=null){
-                OrderApi__Payment_Method__c pm = [SELECT Id FROM OrderApi__Payment_Method__c WHERE OrderApi__Contact__c =: u.contactid ORDER BY CreatedDate DESC LIMIT 1];
+                OrderApi__Payment_Method__c pm = [SELECT Id, Name FROM OrderApi__Payment_Method__c WHERE OrderApi__Contact__c =: u.contactid ORDER BY CreatedDate DESC LIMIT 1];
                 if(pm !=null){
-                    return pm.id;
+                    return pm.Name;
                 }
             }
         }

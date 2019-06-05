@@ -1,7 +1,7 @@
 public class Fon_RefundCreditMemo {
     public String creditMemoId;
     public List<OrderApi__Credit_Memo__c> creditMemoRecord = new List<OrderApi__Credit_Memo__c>();
-    public List<OrderApi__Transaction__c> existingTransactionList= [select id from OrderApi__Transaction__c];
+    public List<OrderApi__Transaction__c> existingTransactionList= new List<OrderApi__Transaction__c>();
     Set<Id> existingTransactionIds = new Set<Id>();
     List<OrderApi__Item__c> creditMemoRefundItem = new List<OrderApi__Item__c>();
     

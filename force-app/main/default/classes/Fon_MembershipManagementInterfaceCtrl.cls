@@ -1,8 +1,11 @@
 /*
-    @Description:  Managing membership related action such as Cancelled Membership, Chnage Member Type and Change State etc.
-    @Author: RSI
+@Description:  Managing membership related action such as Cancelled Membership, Chnage Member Type and Change State etc.
+@Author: RSI
 */
 public with sharing class Fon_MembershipManagementInterfaceCtrl{
+    Static String membershipStateChapter;
+    Static String membershipLocal;
+    
     //final static Boolean strInvoiceStatus = true;
     final static String strActive = 'Active';
     final static String strInactive = 'Inactive';
@@ -10,16 +13,16 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
     //final static String strPostingStatus = 'Posted';
     final static String strCancelled = 'Cancelled';
     final static List<String> lstDraftInvoice = new List<String>{'Draft','Posted'};
-    final static Boolean isVoid = false;
+        final static Boolean isVoid = false;
     public static Map<String,String> mapKeyToMSG = new Map<String,String>();
     /*
-        @Description: This function will be used to cancell membership staging
-        @Lightning Component: Fon_MembershipManagementInterface
-    */
+@Description: This function will be used to cancell membership staging
+@Lightning Component: Fon_MembershipManagementInterface
+*/
     @AuraEnabled
     public static Map<String,String> cancellingMembership(String recordId, String reason){
         List<Fon_Membership_Staging__c> lstMember = [SELECT Id,Fon_Staging_Status__c,Fon_Cancelled_Reason__c FROM Fon_Membership_Staging__c 
-                                                        WHERE Fon_Staging_Status__c =:strActive AND Fon_Contact__c =:recordId];
+                                                     WHERE Fon_Staging_Status__c =:strActive AND Fon_Contact__c =:recordId];
         for(Fon_Membership_Staging__c eachMember : lstMember){
             eachMember.Fon_Staging_Status__c = strInactive;
             //eachMember.Fon_Cancelled_Reason__c = reason;
@@ -34,17 +37,17 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
         return mapKeyToMSG;
     }
     /*
-        @Description: Updating invoices status. It is a helper function for @cancellingMembership.
-        @Param: Id contactId => Passing the id of the contact.
-        @Author: RSI
-    */
+@Description: Updating invoices status. It is a helper function for @cancellingMembership.
+@Param: Id contactId => Passing the id of the contact.
+@Author: RSI
+*/
     public static void updateSubsAndSalesOrder(Id contactId, String reason){
         Set<Id> salesOrderIdSet = new Set<Id>();
         List<OrderApi__Subscription__c> lstSubscription = [SELECT Id,OrderApi__Status__c,OrderApi__Cancelled_Reason__c,OrderApi__Sales_Order_Line__c,
-                                                            OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c,
-                                                            OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c FROM OrderApi__Subscription__c 
-                                                                WHERE OrderApi__Contact__c =: contactId AND OrderApi__Status__c =:strActive AND 
-                                                                    OrderApi__Subscription_Plan__c != null AND OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c =:true];
+                                                           OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c,
+                                                           OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c FROM OrderApi__Subscription__c 
+                                                           WHERE OrderApi__Contact__c =: contactId AND OrderApi__Status__c =:strActive AND 
+                                                           OrderApi__Subscription_Plan__c != null AND OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c =:true];
         for(OrderApi__Subscription__c eachSubscription : lstSubscription){
             eachSubscription.OrderApi__Status__c = strCancelled;
             eachSubscription.OrderApi__Cancelled_Reason__c = reason;
@@ -57,9 +60,9 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
         }
         List<OrderApi__Invoice__c> lstInvoice = new List<OrderApi__Invoice__c>();
         List<OrderApi__Sales_Order__c> lstSO = [SELECT Id,(SELECT Id,OrderApi__Is_Voided__c,OrderApi__Is_Posted__c,OrderApi__Is_Cancelled__c, 
-                                                    OrderApi__Is_Paid__c FROM OrderApi__Invoices__r WHERE OrderApi__Status__c IN :lstDraftInvoice) 
-                                                        FROM OrderApi__Sales_Order__c WHERE Id IN :salesOrderIdSet AND OrderApi__Posting_Entity__c =:strPostedEntity ];
-                                                            //AND OrderApi__Posting_Status__c =:strPostingStatus
+                                                           OrderApi__Is_Paid__c FROM OrderApi__Invoices__r WHERE OrderApi__Status__c IN :lstDraftInvoice) 
+                                                FROM OrderApi__Sales_Order__c WHERE Id IN :salesOrderIdSet AND OrderApi__Posting_Entity__c =:strPostedEntity ];
+        //AND OrderApi__Posting_Status__c =:strPostingStatus
         for(OrderApi__Sales_Order__c eachSO : lstSO){
             for(OrderApi__Invoice__c eachInvoice : eachSO.OrderApi__Invoices__r){
                 if(eachInvoice.OrderApi__Is_Posted__c){
@@ -75,11 +78,11 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
         }
     }
     /*
-        @Description: Fetching active Membership record id
-        @Param: String recordId => Passing the id of the contact.
-        @Return: Active membership record id.
-        @Author: RSI
-    */
+@Description: Fetching active Membership record id
+@Param: String recordId => Passing the id of the contact.
+@Return: Active membership record id.
+@Author: RSI
+*/
     @AuraEnabled
     public static String fetchingActiveMembership(String recordId){
         String membershipRecordId = '';
@@ -91,20 +94,20 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
         return membershipRecordId;
     }
     /*
-        @Description: Fetching active Membership record id
-        @Param: String recordId => Passing the id of the contact.
-        @Return: Active membership record id.
-        @Author: RSI
-    
-    @AuraEnabled
-    public static String updateContactByMembership(String recordId){
-        if(!String.isBlank(recordId)){
-            update new Contact(id=recordId,Fon_Current_Membership_Status__c=strInactive);
-            return 'true';
-        }
-        return 'false';
-    }
-    */
+@Description: Fetching active Membership record id
+@Param: String recordId => Passing the id of the contact.
+@Return: Active membership record id.
+@Author: RSI
+
+@AuraEnabled
+public static String updateContactByMembership(String recordId){
+if(!String.isBlank(recordId)){
+update new Contact(id=recordId,Fon_Current_Membership_Status__c=strInactive);
+return 'true';
+}
+return 'false';
+}
+*/
     
     @AuraEnabled
     public static Boolean changeStateLocal(String recordId){
@@ -118,39 +121,121 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
     }
     
     @AuraEnabled
-    public static void updateRecords(String contactId,String activeMembershipId,String State,String Local){
-        System.debug('jmd contactId-->'+contactId);
-        System.debug('jmd activeMembershipId-->'+activeMembershipId);
-        System.debug('jmd State-->'+State);
-        System.debug('jmd Local-->'+Local);
-       
+    public static Boolean updateRecords(String contactId,String activeMembershipId,String State,String Local){
+        Set<Id> itemIds = new Set<Id>();
+        Set<Id> soIds = new Set<Id>();
+        Map<Id,Id> subscriptionVsItem = new Map<Id,Id>();
+        Map<Id,Id> ItemVsSubscription = new Map<Id,Id>();
         List<OrderApi__Item__c> stateItem = new List<OrderApi__Item__c>();
         List<OrderApi__Item__c> localItem = new List<OrderApi__Item__c>();
+         List<OrderApi__Badge__c> updateBadgeList = new List<OrderApi__Badge__c>();
+        List<OrderApi__Subscription_Line__c> updateSubscriptionLine = new List<OrderApi__Subscription_Line__c>();
+        String temp;
         if(String.isNotBlank(State)){
-            
+            temp='Membership '+State+' Dues';
+            stateItem = [select id from OrderApi__Item__c where Name=:temp];
         }
-        if(String.isNotBlank(Local)){
-            
+        if(String.isNotBlank(Local)){          
+            temp='Membership '+Local+' Dues';
+            localItem = [select id from OrderApi__Item__c where Name=:temp];
         }
-        Set<Id> itemIds = new Set<Id>();
-        if(String.isNotBlank(State) && String.isNotBlank(Local)){
-            List<OrderApi__Subscription__c> subscriptions = [select id from OrderApi__Subscription__c 
-                                                             where OrderApi__Contact__c=:contactId 
-                                                             And OrderApi__Is_Active__c=true  
-                                                             And OrderApi__Item__r.OrderApi__Is_Active__c=true 
-                                                             And OrderApi__Item__r.OrderApi__Item_Class__r.OrderApi__Is_Active__c=true
-                                                             And OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c=true];
-            if(subscriptions.size()>0){
-                List<OrderApi__Subscription_Line__c> subscriptionLines = [select OrderApi__Item__c from OrderApi__Subscription_Line__c where OrderApi__Subscription__c=:subscriptions[0].id And OrderApi__Item__c!=Null];
-                if(subscriptionLines.size()>0){
-                    for(OrderApi__Subscription_Line__c SL:subscriptionLines){
-                       itemIds.add(SL.OrderApi__Item__c);
-                    }    
+        else{
+            Local=null; 
+        }
+        Map<Id,Id> stVSbadgeType = new Map<Id,Id>();
+        Map<Id,Id> stVSbadgeWorkflow = new Map<Id,Id>();
+        if(stateItem.size()>0){
+            List<OrderApi__Badge_Workflow__c> stateBadge=[select id,OrderApi__Badge_Type__c from OrderApi__Badge_Workflow__c where OrderApi__Item__c=:stateItem[0].Id];
+            if(stateBadge.size()>0){
+                stVSbadgeType.put(stateItem[0].Id,stateBadge[0].OrderApi__Badge_Type__c);
+                stVSbadgeWorkflow.put(stateItem[0].Id,stateBadge[0].Id);
+            }
+        }
+        if(localItem.size()>0){
+            List<OrderApi__Badge_Workflow__c> localBadge=[select id,OrderApi__Badge_Type__c from OrderApi__Badge_Workflow__c where OrderApi__Item__c=:localItem[0].Id];
+            if(localBadge.size()>0){
+                stVSbadgeType.put(localItem[0].Id,localBadge[0].OrderApi__Badge_Type__c);
+                stVSbadgeWorkflow.put(localItem[0].Id,localBadge[0].Id);
+            }
+        }
+        List<Fon_Membership_Staging__c> lstMemberShipStage = [SELECT Fon_Membership_State_Chapter__c,Fon_Membership_Local__c FROM Fon_Membership_Staging__c WHERE id =:activeMembershipId AND Fon_Staging_Status__c ='Active' Limit 1];
+        if(lstMemberShipStage.size()>0){
+            if(State!=lstMemberShipStage[0].Fon_Membership_State_Chapter__c || Local!=lstMemberShipStage[0].Fon_Membership_Local__c){
+                if(stateItem.size()>0 || localItem.size()>0){
+                    List<OrderApi__Subscription__c> subscriptions = [select id from OrderApi__Subscription__c 
+                                                                     where OrderApi__Contact__c=:contactId 
+                                                                     And OrderApi__Is_Active__c=true  
+                                                                     And OrderApi__Item__r.OrderApi__Is_Active__c=true 
+                                                                     And OrderApi__Item__r.OrderApi__Item_Class__r.OrderApi__Is_Active__c=true
+                                                                     And OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c=true];
+                    if(subscriptions.size()>0){
+                        List<OrderApi__Subscription_Line__c> subscriptionLines = [select OrderApi__Item__c,OrderApi__Sales_Order_Line__c from OrderApi__Subscription_Line__c where OrderApi__Subscription__c=:subscriptions[0].id And OrderApi__Item__c!=Null];
+                        if(subscriptionLines.size()>0){
+                            for(OrderApi__Subscription_Line__c SL:subscriptionLines){
+                                itemIds.add(SL.OrderApi__Item__c);
+                                soIds.add(SL.OrderApi__Sales_Order_Line__c);
+                                ItemVsSubscription.put(SL.OrderApi__Item__c,SL.Id);
+                            }    
+                        }
+                        if(!itemIds.isEmpty()){
+                            List<OrderApi__Item__c> itmList=[select OrderApi__Item_Class__r.Fon_Is_State_Membership__c,OrderApi__Item_Class__r.Fon_Is_Local_Membership__c from OrderApi__Item__c where OrderApi__Is_Active__c=true And id in :itemIds And (OrderApi__Item_Class__r.Fon_Is_State_Membership__c=true OR OrderApi__Item_Class__r.Fon_Is_Local_Membership__c=true)];
+                            if(itmList.size()>0){
+                                for(OrderApi__Item__c itm:itmList){
+                                    for(OrderApi__Subscription_Line__c SL:subscriptionLines){
+                                        if(itm.Id==SL.OrderApi__Item__c){
+                                            if(itm.OrderApi__Item_Class__r.Fon_Is_State_Membership__c){
+                                                SL.OrderApi__Item__c=stateItem[0].Id;
+                                                subscriptionVsItem.put(SL.Id,stateItem[0].Id);
+                                                updateSubscriptionLine.add(SL);
+                                            }
+                                            else if(itm.OrderApi__Item_Class__r.Fon_Is_Local_Membership__c){
+                                                SL.OrderApi__Item__c=localItem[0].Id;
+                                                subscriptionVsItem.put(SL.Id,localItem[0].Id);
+                                                updateSubscriptionLine.add(SL);
+                                            }
+                                        }
+                                    }  
+                                }
+                            }
+                        }
+                        if(!soIds.isEmpty()){
+                            List<OrderApi__Badge__c> badgeList=[select OrderApi__Item__c from OrderApi__Badge__c where OrderApi__Is_Active__c=true And OrderApi__Sales_Order_Line__c in:soIds];
+                            if(badgeList.size()>0){
+                                for(OrderApi__Badge__c bdg:badgeList){
+                                    if(!subscriptionVsItem.isEmpty()){                                       
+                                        system.debug('jmd--stVSbadgeType--'+stVSbadgeType);
+                                        system.debug('jmd--stVSbadgeWorkflow--'+stVSbadgeWorkflow);
+                                        system.debug('jmd--subscriptionVsItem--'+subscriptionVsItem);
+                                        system.debug('jmd--ItemVsSubscription--'+ItemVsSubscription);
+                                        system.debug('jmd--bdg.OrderApi__Item__c--'+bdg.OrderApi__Item__c);
+                                        system.debug('jmd123----'+subscriptionVsItem.get(ItemVsSubscription.get(bdg.OrderApi__Item__c)));
+                                        
+                                        bdg.OrderApi__Badge_Type__c=stVSbadgeType.get(subscriptionVsItem.get(ItemVsSubscription.get(bdg.OrderApi__Item__c)));
+                                        bdg.OrderApi__Badge_Workflow__c=stVSbadgeWorkflow.get(subscriptionVsItem.get(ItemVsSubscription.get(bdg.OrderApi__Item__c)));
+                                        bdg.OrderApi__Item__c=subscriptionVsItem.get(ItemVsSubscription.get(bdg.OrderApi__Item__c)); 
+                                        
+                                        updateBadgeList.add(bdg);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    List<Contact> conList=[select Fon_Chapter_Change_Needed__c from Contact where id=:contactId];          
+                    
+                    system.debug('jmd updateSubscriptionLine--'+updateSubscriptionLine);
+                    
+                    if(updateSubscriptionLine.size()>0){
+                        update updateSubscriptionLine; 
+                        if(updateBadgeList.size()>0){
+                            update updateBadgeList;
+                        }
+                        conList[0].Fon_Chapter_Change_Needed__c=false;
+                        update conList;
+                        return true;
+                    }
                 }
             }
         }
-        else{
-            
-        }
+        return false;
     }
 }
