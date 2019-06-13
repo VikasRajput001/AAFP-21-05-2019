@@ -2,13 +2,14 @@
                 access="global" controller="Fon_MembershipManagementInterfaceCtrl">
     <ltng:require styles="{!$Resource.Expand_Model_Width + '/Expand_Model_Width.css'}"/>
 	<aura:attribute name="recordId" type="String" />
+    <aura:attribute name="objActiveSubscription" type="OrderApi__Subscription__c" />
     <aura:attribute name="activeMembershipId" type="String" />
     <aura:attribute name="enableMainFrame" type="Boolean" default="true"/>
 	<aura:attribute name="dynamicMsgMAP" type="Map" />
     <aura:attribute name="showCancelReasonModal" type="boolean" default="false"/> 
     <aura:attribute name="reasonForCancelling" type="String" />
 	<aura:handler name="init" value="{!this}" action="{!c.init}" />
-    
+     
     <aura:html tag="style">
         .slds-spinner_container{
             background: transparent !important;
@@ -82,7 +83,7 @@
                     </div>
                     
                     <div class="slds-col slds-size_1-of-1 slds-align_absolute-center">
-                        <span><button class="slds-button slds-button_brand slds-float_right custom-button" >Change Subscription Plan</button></span>
+                        <span><button class="slds-button slds-button_brand slds-float_right custom-button" onclick="{!c.changeSubscriptionPlan}">Change Subscription Plan</button></span>
                     </div>
                     
                     <div class="slds-col slds-size_1-of-1 slds-m-top_medium">

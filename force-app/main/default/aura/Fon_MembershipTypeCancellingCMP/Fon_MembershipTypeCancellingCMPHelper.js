@@ -11,10 +11,11 @@
         toastEvent.fire();
     },
     cancelMembershipHelper : function(component, event, helper) {
-		var action = component.get("c.cancellingMembership");
+        var action = component.get("c.cancellingMembership");
         action.setParams({
             recordId : component.get("v.contactId"),
-            reason : component.get("v.reasonForCancelling")
+            reason : component.get("v.reasonForCancelling"),
+            source : 'membershiptype'
         });
         action.setCallback(this,function(result){            
             if (result.getState() == 'SUCCESS') {
@@ -37,5 +38,11 @@
             }
         });
         evt.fire();
-    }
+    },
+    continuetoCancel : function(component, event, helper) {
+       component.set("v.showCancelReasonModal",false); 
+       var serverStatusSpinner = component.find("serverStatusSpinner");
+       $A.util.toggleClass(serverStatusSpinner, "slds-hide");
+       this.cancelMembershipHelper(component, event, helper)
+   }
 })

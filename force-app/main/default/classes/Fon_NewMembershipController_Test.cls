@@ -24,7 +24,7 @@ public class Fon_NewMembershipController_Test {
         Fon_Dues_Paid_by_Chapter__c = 12,
         Fon_Dues_Paid_by_Residency_Program__c = 23,
         Fon_Join_Date__c = System.today(),
-        Fon_Membership_State_Chapter__c = 'Virginia',
+        //Fon_Membership_State_Chapter__c = 'Virginia',
         Fon_Membership_Type__c = 'Resident',
         Fon_Staging_Status__c = 'New',
         Fon_Subscription_Plan__c = '1/1 – 12/31, single paymt',

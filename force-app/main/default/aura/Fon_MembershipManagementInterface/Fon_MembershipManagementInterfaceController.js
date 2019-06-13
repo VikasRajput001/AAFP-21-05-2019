@@ -1,6 +1,7 @@
 ({
     init : function(component, event, helper) {
         helper.fetchActiveMembership(component, event, helper);
+        helper.fetchActiveSubscription(component, event, helper);
     },
     newMembership : function(component, event, helper) {
         var evt = $A.get("e.force:navigateToComponent");
@@ -87,6 +88,23 @@
                 }
             });
             $A.enqueueAction(action);
+        }else{
+            helper.showToastMessage("warning", "Warning!", "No active membership exist.");
+        }
+    },
+    changeSubscriptionPlan : function(component, event, helper) {
+        var activeMembershipId = component.get("v.activeMembershipId");
+        if(activeMembershipId != '' && activeMembershipId != undefined){
+            var evt = $A.get("e.force:navigateToComponent");
+            evt.setParams({
+                componentDef : "c:Fon_MembershipMngForSubscriptionPlan",
+                componentAttributes: {
+                    contactId : component.get("v.recordId"),
+                    activeMembershipId : component.get("v.activeMembershipId"),
+                    objActiveSubscription : component.get("v.objActiveSubscription")
+                }
+            });
+            evt.fire();
         }else{
             helper.showToastMessage("warning", "Warning!", "No active membership exist.");
         }

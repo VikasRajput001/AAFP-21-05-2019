@@ -3,7 +3,8 @@
 		var action = component.get("c.cancellingMembership");
         action.setParams({
             recordId : component.get("v.recordId"),
-            reason : component.get("v.reasonForCancelling")
+            reason : component.get("v.reasonForCancelling"),
+            source : 'membershipcancelled'
         });
         action.setCallback(this,function(result){            
             if (result.getState() == 'SUCCESS') {
@@ -45,6 +46,22 @@
             if (result.getState() == 'SUCCESS') {
                 var membershipId = result.getReturnValue();
                 component.set("v.activeMembershipId",membershipId);
+            }else {
+                this.showToastMessage("error", "Error!", "Something went wrong. Please contact to your admin.");
+            }
+            //$A.get("e.force:closeQuickAction").fire();
+        });
+		$A.enqueueAction(action);
+    },
+    fetchActiveSubscription : function(component, event, helper) {
+        var action = component.get("c.fetchingActiveSubscription");
+        action.setParams({
+            recordId : component.get("v.recordId")
+        });
+        action.setCallback(this,function(result){            
+            if (result.getState() == 'SUCCESS') {
+                var aubscriptionId = result.getReturnValue();
+                component.set("v.objActiveSubscription",aubscriptionId);
             }else {
                 this.showToastMessage("error", "Error!", "Something went wrong. Please contact to your admin.");
             }

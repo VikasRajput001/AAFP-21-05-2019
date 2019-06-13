@@ -36,7 +36,7 @@
                                                   objectApiName="Fon_Membership_Staging__c"
                                                   aura:id="membershipStateLocalForm" >                           
                           
-                            <lightning:inputField fieldName="Fon_Membership_State_Chapter__c"/>
+                            <lightning:inputField fieldName="Fon_Membership_State__c"/>
                             <lightning:inputField fieldName="Fon_Membership_Local__c"/>
                             
                             <div class="slds-m-top_medium">

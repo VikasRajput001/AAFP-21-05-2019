@@ -13,7 +13,7 @@
         action.setParams({
             contactId : component.get("v.contactId"),
             activeMembershipId : component.get("v.activeMembershipId"),
-            State : fields["Fon_Membership_State_Chapter__c"],
+            State : fields["Fon_Membership_State__c"],
             Local : fields["Fon_Membership_Local__c"]
         });
         action.setCallback(this,function(result){
