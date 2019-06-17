@@ -22,18 +22,7 @@
         component.set("v.enableMainFrame",false);
         component.set("v.showCancelReasonModal",true);
     },
-    cancelMembership : function(component, event, helper) {
-        var cancelingReason = component.get("v.reasonForCancelling");
-        if(cancelingReason == '' || cancelingReason === undefined){
-            helper.showToastMessage("warning", "Warning!", "Please add reason for Cancelling  .");
-            return;
-        }
-        var serverStatusSpinner = component.find("serverStatusSpinner");
-        $A.util.toggleClass(serverStatusSpinner, "slds-hide");
-        var mainFrameDiv = component.find("mainFrameDiv");
-        $A.util.addClass(mainFrameDiv, "slds-hide");
-        helper.cancelMembershipHelper(component, event, helper)
-    },
+    
     closeCancelModalView : function(component, event, helper) {
         component.set("v.showCancelReasonModal",false); 
         component.set("v.enableMainFrame",true); 
@@ -56,6 +45,31 @@
         }else{
             helper.showToastMessage("warning", "Warning!", "No active membership exist.");
         }
+    },
+    
+    cancelMembershipButtonClick : function(component, event, helper) {
+        var activeMembershipId = component.get("v.activeMembershipId");
+        if(activeMembershipId == ''){
+            helper.showToastMessage("warning", "Warning!", "No active membership exist.");
+            return;
+        }
+        var evt = $A.get("e.force:navigateToComponent");
+        evt.setParams({
+            componentDef : "c:Fon_CancelMembershipCmp",
+            componentAttributes: {
+                contactId : component.get("v.recordId"),
+                activeMembershipId : component.get("v.activeMembershipId")
+            }
+        });
+        evt.fire();
+        
+        /*  var cancelingReason = component.get("v.reasonForCancelling");
+       
+        var serverStatusSpinner = component.find("serverStatusSpinner");
+        $A.util.toggleClass(serverStatusSpinner, "slds-hide");
+        var mainFrameDiv = component.find("mainFrameDiv");
+        $A.util.addClass(mainFrameDiv, "slds-hide");
+        helper.cancelMembershipHelper(component, event, helper)*/
     },
     
     changeState_LocalType : function(component, event, helper){
@@ -88,7 +102,8 @@
                 }
             });
             $A.enqueueAction(action);
-        }else{
+        }
+        else{
             helper.showToastMessage("warning", "Warning!", "No active membership exist.");
         }
     },

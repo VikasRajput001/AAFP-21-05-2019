@@ -32,23 +32,33 @@
         toastEvent.fire();
     },
     changeSubscriptionPlan : function(component, event, helper) {
-        var action = component.get("c.changePlan2");
+        var action = component.get("c.changeSubscriptionPlan");
         action.setParams({
             ContactId : component.get("v.contactId"),
-            subPlanId : component.get("v.selectedSuscribePlanId")
+            OldsubPlanId : component.get("v.objActiveSubscription").OrderApi__Subscription_Plan__c,
+            NewsubPlanId : component.get("v.selectedSuscribePlanId")
         });
         action.setCallback(this,function(result){            
             if (result.getState() == 'SUCCESS') {
+                //alert(result.getReturnValue());
                 this.showToastMessage("success", "SUCCESS!", "Subscription plan has been updated.");
-                
+                //alert('ContactId'+component.get("v.contactId")+'OldsubPlanId'+component.get("v.objActiveSubscription").OrderApi__Subscription_Plan__c+'NewsubPlanId'+component.get("v.selectedSuscribePlanId"));
             }else {
                 this.showToastMessage("error", "Error!", "Something went wrong. Please contact to your admin.");
             }
             $A.get("e.force:closeQuickAction").fire();
             var serverStatusSpinner = component.find("serverStatusSpinner");
             $A.util.toggleClass(serverStatusSpinner, "slds-hide");
-            component.set("v.isComponentLoading",false);
+            component.set("v.isComponentLoading",true);
+            this.redirectToContact(component, event, helper);
         });
 		$A.enqueueAction(action);
+    },
+    redirectToContact : function(component, event, helper) {
+        var urlEvent = $A.get("e.force:navigateToURL");
+        urlEvent.setParams({
+            "url": "/lightning/r/Contact/"+component.get("v.contactId")+"/view?0.source=alohaHeader"
+        });
+        urlEvent.fire();
     }
 })

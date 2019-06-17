@@ -1,4 +1,4 @@
-public class MembershipStagingTriggerHandler{
+public class Fon_MembershipStagingTriggerHandler{
     /*
         @Description: Filtering "Membership Stage" records based on "Staging Status" = "Approved",
                         This is base function to perform further logic.
@@ -52,13 +52,13 @@ public class MembershipStagingTriggerHandler{
         for(OrderApi__Subscription_Plan__c eachSubscription : [SELECT Id,Name FROM OrderApi__Subscription_Plan__c WHERE Name IN:subscriptionPlanSet ]){
             mapNameToObjSubscriptionPlan.put(eachSubscription.Name,eachSubscription);
         }
-        
+        Map<OrderApi__Sales_Order__c,OrderApi__Sales_Order__c> mapNewSOToInsertedSO = new Map<OrderApi__Sales_Order__c,OrderApi__Sales_Order__c>();
         Map<OrderApi__Sales_Order__c,List<OrderApi__Sales_Order_Line__c>> mapSOTolstSOLI = new Map<OrderApi__Sales_Order__c,List<OrderApi__Sales_Order_Line__c>>();
         List<OrderApi__Sales_Order__c> lstNewSalesOrder = new List<OrderApi__Sales_Order__c>();
         for(Fon_Membership_Staging__c eachMemberStaging : lstApprovedMembershipStage){
             mapSOTolstSOLI.put(instanceSalesOrder(eachMemberStaging),
                                                     instanceOfALLSalesOrderLineItem(eachMemberStaging,mapItemNameToObjItem,mapMemberShipIdToSetItemName,mapNameToObjSubscriptionPlan));
-            
+            mapNewSOToInsertedSO.put(instanceSalesOrder(eachMemberStaging), instanceSalesOrder(eachMemberStaging));
         }
         if(!lstNewSalesOrder.isEmpty()){
             insert lstNewSalesOrder;        //This line of code will be updated by FD Sevice
@@ -66,19 +66,18 @@ public class MembershipStagingTriggerHandler{
         if(!mapSOTolstSOLI.keySet().isEmpty()){
             List<OrderApi__Sales_Order__c> lstNewSO = new List<OrderApi__Sales_Order__c>();
             lstNewSO.addALL(mapSOTolstSOLI.keySet());
-            insert lstNewSO;                //This line of code will be updated by FD Sevice
+            insert mapNewSOToInsertedSO.values();                //This line of code will be updated by FD Sevice
             List<OrderApi__Sales_Order_Line__c> lstNewSOLI = new List<OrderApi__Sales_Order_Line__c>();
             for(OrderApi__Sales_Order__c objSalesOrder : mapSOTolstSOLI.keySet()){
                 if(mapSOTolstSOLI.get(objSalesOrder) != null){
                     for(OrderApi__Sales_Order_Line__c eachSOLI : mapSOTolstSOLI.get(objSalesOrder)){
-                        eachSOLI.OrderApi__Sales_Order__c = objSalesOrder.Id;
+                        eachSOLI.OrderApi__Sales_Order__c = mapNewSOToInsertedSO.get(objSalesOrder).Id;
                         lstNewSOLI.add(eachSOLI);
                     }
                 }
             }
             insert lstNewSOLI;              //This line of code will be updated by FD Sevice
         }
-        
     }
     
     //Instantiating Sales Order Here
@@ -110,7 +109,7 @@ public class MembershipStagingTriggerHandler{
         }
         return lstSalesOrderLineItem;
     }
-    
+    //Instantiating Sales Order Line Item Here
     public OrderApi__Sales_Order_Line__c fetchSalesOrderLineItemObj(OrderApi__Item__c objItem, Fon_Membership_Staging__c objMemberStage, 
                                             Map<String,OrderApi__Subscription_Plan__c> mapNameToObjSubscriptionPlan){
         OrderApi__Sales_Order_Line__c objLineItem = new OrderApi__Sales_Order_Line__c();    //This line of code will be updated by FD Sevice
@@ -121,12 +120,16 @@ public class MembershipStagingTriggerHandler{
         if(mapNameToObjSubscriptionPlan.containsKey(objMemberStage.Fon_Subscription_Plan__c)){
             objLineItem.OrderApi__Subscription_Plan__c = mapNameToObjSubscriptionPlan.get(objMemberStage.Fon_Subscription_Plan__c).Id;
         }
+        if(objItem.Fon_Is_PAC_Item__c){
+            objLineItem.OrderApi__Price_Override__c = true;
+            objLineItem.OrderApi__Sale_Price__c = objMemberStage.Fon_PAC_Contribution_Information__c;
+        }
         objLineItem.OrderApi__Is_Subscription__c = true;
         return objLineItem;
     }
     
     public List<OrderApi__Item__c> fetchFoundationItem(){
-        return [SELECT Id,Name FROM OrderApi__Item__c WHERE Is_Foundation_Donation__c = true];
+        return [SELECT Id,Name FROM OrderApi__Item__c WHERE Is_Foundation_Donation__c = true OR Fon_Is_PAC_Item__c = true];
     }
     
 }

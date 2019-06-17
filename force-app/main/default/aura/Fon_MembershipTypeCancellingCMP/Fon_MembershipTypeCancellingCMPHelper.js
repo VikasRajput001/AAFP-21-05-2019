@@ -10,12 +10,10 @@
         });
         toastEvent.fire();
     },
-    cancelMembershipHelper : function(component, event, helper) {
-        var action = component.get("c.cancellingMembership");
+    changeMembershipType : function(component, event, helper) {
+        var action = component.get("c.changeMembershipType");
         action.setParams({
             recordId : component.get("v.contactId"),
-            reason : component.get("v.reasonForCancelling"),
-            source : 'membershiptype'
         });
         action.setCallback(this,function(result){            
             if (result.getState() == 'SUCCESS') {
@@ -27,7 +25,7 @@
             }
             $A.get("e.force:closeQuickAction").fire();
         });
-		$A.enqueueAction(action);
+        $A.enqueueAction(action);
     },
     newMembership : function(component, event, helper) {
         var evt = $A.get("e.force:navigateToComponent");
@@ -40,9 +38,9 @@
         evt.fire();
     },
     continuetoCancel : function(component, event, helper) {
-       component.set("v.showCancelReasonModal",false); 
-       var serverStatusSpinner = component.find("serverStatusSpinner");
-       $A.util.toggleClass(serverStatusSpinner, "slds-hide");
-       this.cancelMembershipHelper(component, event, helper)
-   }
+        component.set("v.showCancelReasonModal",false); 
+        var serverStatusSpinner = component.find("serverStatusSpinner");
+        $A.util.toggleClass(serverStatusSpinner, "slds-hide");
+        this.changeMembershipType(component, event, helper)
+    }
 })

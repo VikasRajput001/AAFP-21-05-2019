@@ -16,34 +16,93 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
     final static List<String> lstDraftInvoice = new List<String>{'Draft','Posted'};
         final static Boolean isVoid = false;
     public static Map<String,String> mapKeyToMSG = new Map<String,String>();
-    /*
-@Description: This function will be used to cancell membership staging
-@Lightning Component: Fon_MembershipManagementInterface
-*/
+    
+    
+    
+    /* Cancel membership button functionality Start */
     @AuraEnabled
-    public static Map<String,String> cancellingMembership(String recordId, String reason, String source){
-        List<Fon_Membership_Staging__c> lstMember = [SELECT Id,Fon_Staging_Status__c,Fon_Cancelled_Reason__c FROM Fon_Membership_Staging__c 
-                                                     WHERE Fon_Staging_Status__c =:strActive AND Fon_Contact__c =:recordId];
+    public static Map<String,String> cancelMembership(String recordId, String reason, Boolean isRevertFinancial){
+        List<Fon_Membership_Staging__c> lstMember = [SELECT Id,Fon_Staging_Status__c FROM Fon_Membership_Staging__c WHERE Fon_Staging_Status__c =:strActive AND Fon_Contact__c =:recordId];
         for(Fon_Membership_Staging__c eachMember : lstMember){
             eachMember.Fon_Staging_Status__c = strInactive;
-            //eachMember.Fon_Cancelled_Reason__c = reason;
         }
         if(!lstMember.isEmpty()){
+            if(isRevertFinancial){
+                update_InvoiceAndScheduledPayment(recordId);//Updating invoice and Scheduled Payment
+            }
+            else{
+                updateSubscription(recordId);
+            }
             update lstMember;
             update new Contact(id=recordId,Fon_Current_Membership_Status__c=strInactive);
-            updateSubsAndSalesOrder(recordId, reason, source); //Updating invoice
-        }else{
+        }
+        else{
             mapKeyToMSG.put('isEmptyMember','true');
         }
         return mapKeyToMSG;
     }
-    /*
-@Description: Updating invoices status. It is a helper function for @cancellingMembership.
-@Param: Id contactId => Passing the id of the contact.
-@Author: RSI
-*/
-    public static void updateSubsAndSalesOrder(Id contactId, String reason, String source){
+    
+    public static void update_InvoiceAndScheduledPayment(Id contactId){
         Set<Id> salesOrderIdSet = new Set<Id>();
+        List<OrderApi__Invoice__c> lstInvoice = new List<OrderApi__Invoice__c>();
+        List<OrderApi__Scheduled_Payment__c> updateschedulePaymentList = new  List<OrderApi__Scheduled_Payment__c>();
+        
+        List<OrderApi__Subscription__c> lstSubscription = [SELECT Id,OrderApi__Status__c,
+                                                           OrderApi__Cancelled_Reason__c,
+                                                           OrderApi__Sales_Order_Line__c,
+                                                           OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c,
+                                                           OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c 
+                                                           FROM OrderApi__Subscription__c 
+                                                           WHERE OrderApi__Contact__c =:contactId 
+                                                           AND OrderApi__Status__c =:strActive 
+                                                           AND OrderApi__Subscription_Plan__c != null 
+                                                           AND OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c =:true];
+        for(OrderApi__Subscription__c eachSubscription : lstSubscription){           
+            if(eachSubscription.OrderApi__Sales_Order_Line__c != null){
+                salesOrderIdSet.add(eachSubscription.OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c);
+            }
+        }
+        if(!salesOrderIdSet.isEmpty()){
+            List<OrderApi__Sales_Order__c> lstSO = [SELECT Id,(SELECT Id,OrderApi__Is_Voided__c,OrderApi__Is_Posted__c,OrderApi__Is_Cancelled__c, 
+                                                               OrderApi__Is_Paid__c FROM OrderApi__Invoices__r WHERE OrderApi__Status__c IN :lstDraftInvoice) 
+                                                    FROM OrderApi__Sales_Order__c 
+                                                    WHERE Id IN :salesOrderIdSet 
+                                                    AND OrderApi__Posting_Entity__c =:strPostedEntity 
+                                                    AND OrderApi__Schedule_Type__c = 'Installment'];
+            if(lstSO.size()>0){
+                for(OrderApi__Sales_Order__c eachSO : lstSO){
+                    for(OrderApi__Invoice__c eachInvoice : eachSO.OrderApi__Invoices__r){
+                        if(eachInvoice.OrderApi__Is_Posted__c && !eachInvoice.OrderApi__Is_Paid__c){
+                            eachInvoice.OrderApi__Is_Voided__c = true;
+                            lstInvoice.add(eachInvoice);
+                            
+                        }else if(!eachInvoice.OrderApi__Is_Posted__c && !eachInvoice.OrderApi__Is_Paid__c){
+                            eachInvoice.OrderApi__Is_Cancelled__c = true;
+                            lstInvoice.add(eachInvoice);
+                        }
+                    }
+                }
+            }
+        }
+        if(!lstInvoice.isEmpty()){
+            Set<Id> invoiceIds= (new Map<Id,sObject>(lstInvoice)).keySet(); 
+            if(!invoiceIds.isEmpty()){
+                List<OrderApi__Scheduled_Payment__c> schedulePaymentList = [select OrderApi__Is_Cancelled__c from OrderApi__Scheduled_Payment__c where OrderApi__Invoice__c in:invoiceIds];
+                if(schedulePaymentList.size()>0){
+                    for(OrderApi__Scheduled_Payment__c sp:schedulePaymentList){
+                        sp.OrderApi__Is_Cancelled__c=true;         
+                        updateschedulePaymentList.add(sp);
+                    }
+                }
+            }
+            update lstInvoice;
+            if(updateschedulePaymentList.size()>0){
+                update updateschedulePaymentList;
+            }
+        }
+    }
+    
+    public static void updateSubscription(Id contactId){
         List<OrderApi__Subscription__c> lstSubscription = [SELECT Id,OrderApi__Status__c,OrderApi__Cancelled_Reason__c,OrderApi__Sales_Order_Line__c,
                                                            OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c,
                                                            OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c FROM OrderApi__Subscription__c 
@@ -51,28 +110,71 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
                                                            OrderApi__Subscription_Plan__c != null AND OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c =:true];
         for(OrderApi__Subscription__c eachSubscription : lstSubscription){
             eachSubscription.OrderApi__Status__c = strCancelled;
-            eachSubscription.OrderApi__Cancelled_Reason__c = reason;
-            if(eachSubscription.OrderApi__Sales_Order_Line__c != null){
-                salesOrderIdSet.add(eachSubscription.OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c);
-            }
         }
         if(!lstSubscription.isEmpty()){
             update lstSubscription;
-            for(OrderApi__Subscription__c eachSubscribe : lstSubscription){
-                if('membershiptype'.equals(source)){ //Changing Membership type
-                    eachSubscribe.OrderApi__Status__c = strExpired;
+        }
+    }
+    
+    /* Cancel membership button functionality End */    
+    
+    /*  Change Member type button functionality Start */ 
+    /* @Lightning Component: Fon_MembershipManagementInterface */
+    @AuraEnabled
+    public static Map<String,String> changeMembershipType(String recordId){
+        List<Fon_Membership_Staging__c> lstMember = [SELECT Id,Fon_Staging_Status__c,Fon_Cancelled_Reason__c FROM Fon_Membership_Staging__c 
+                                                     WHERE Fon_Staging_Status__c =:strActive AND Fon_Contact__c =:recordId];
+        for(Fon_Membership_Staging__c eachMember : lstMember){
+            eachMember.Fon_Staging_Status__c = strExpired;
+        }
+        if(!lstMember.isEmpty()){
+            update lstMember;
+            update new Contact(id=recordId,Fon_Current_Membership_Status__c=strInactive);
+            update_Subscription_InvoiceAndScheduledPayment(recordId); //Updating Subscription,invoice and Scheduled Payment
+        }else{
+            mapKeyToMSG.put('isEmptyMember','true');
+        }
+        return mapKeyToMSG;
+    }
+
+    public static void update_Subscription_InvoiceAndScheduledPayment(Id contactId){
+        Set<Id> salesOrderIdSet = new Set<Id>();
+        List<OrderApi__Scheduled_Payment__c> updateschedulePaymentList = new  List<OrderApi__Scheduled_Payment__c>();
+        List<OrderApi__Subscription__c> lstSubscription = [SELECT Id,OrderApi__Status__c,
+                                                           OrderApi__Cancelled_Reason__c,
+                                                           OrderApi__Sales_Order_Line__c,
+                                                           OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c,
+                                                           OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c 
+                                                           FROM OrderApi__Subscription__c 
+                                                           WHERE OrderApi__Contact__c =:contactId 
+                                                           AND OrderApi__Status__c =:strActive 
+                                                           AND OrderApi__Subscription_Plan__c != null 
+                                                           AND OrderApi__Item__r.OrderApi__Item_Class__r.Fon_Is_Main_Membership__c =:true];
+        if(!lstSubscription.isEmpty()){
+            for(OrderApi__Subscription__c eachSubscription : lstSubscription){
+                eachSubscription.OrderApi__Status__c = strCancelled;
+                if(eachSubscription.OrderApi__Sales_Order_Line__c != null){
+                    salesOrderIdSet.add(eachSubscription.OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c);
                 }
+            }
+            update lstSubscription;
+            for(OrderApi__Subscription__c eachSubscribe : lstSubscription){
+                eachSubscribe.OrderApi__Status__c = strExpired;
             }
             update lstSubscription;
         }
         List<OrderApi__Invoice__c> lstInvoice = new List<OrderApi__Invoice__c>();
         List<OrderApi__Sales_Order__c> lstSO = [SELECT Id,(SELECT Id,OrderApi__Is_Voided__c,OrderApi__Is_Posted__c,OrderApi__Is_Cancelled__c, 
-                                                           OrderApi__Is_Paid__c FROM OrderApi__Invoices__r WHERE OrderApi__Status__c IN :lstDraftInvoice) 
-                                                FROM OrderApi__Sales_Order__c WHERE Id IN :salesOrderIdSet AND OrderApi__Posting_Entity__c =:strPostedEntity ];
-        //AND OrderApi__Posting_Status__c =:strPostingStatus
+                                                           OrderApi__Is_Paid__c FROM OrderApi__Invoices__r 
+                                                           WHERE OrderApi__Status__c IN :lstDraftInvoice) 
+                                                FROM OrderApi__Sales_Order__c 
+                                                WHERE Id IN :salesOrderIdSet 
+                                                AND OrderApi__Posting_Entity__c =:strPostedEntity 
+                                                AND OrderApi__Schedule_Type__c = 'Installment'];
+        
         for(OrderApi__Sales_Order__c eachSO : lstSO){
             for(OrderApi__Invoice__c eachInvoice : eachSO.OrderApi__Invoices__r){
-                if(eachInvoice.OrderApi__Is_Posted__c){
+                if(eachInvoice.OrderApi__Is_Posted__c && !eachInvoice.OrderApi__Is_Paid__c){
                     eachInvoice.OrderApi__Is_Voided__c = true;
                 }else if(!eachInvoice.OrderApi__Is_Posted__c && !eachInvoice.OrderApi__Is_Paid__c){
                     eachInvoice.OrderApi__Is_Cancelled__c = true;
@@ -81,10 +183,26 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
             }
         }
         if(!lstInvoice.isEmpty()){
+            Set<Id> invoiceIds= (new Map<Id,sObject>(lstInvoice)).keySet(); 
+            if(!invoiceIds.isEmpty()){
+                List<OrderApi__Scheduled_Payment__c> schedulePaymentList = [select OrderApi__Is_Cancelled__c from OrderApi__Scheduled_Payment__c where OrderApi__Invoice__c in:invoiceIds];
+                if(schedulePaymentList.size()>0){
+                    for(OrderApi__Scheduled_Payment__c sp:schedulePaymentList){
+                        sp.OrderApi__Is_Cancelled__c=true;         
+                        updateschedulePaymentList.add(sp);
+                    }
+                }
+            }
             update lstInvoice;
+            if(updateschedulePaymentList.size()>0){
+                update updateschedulePaymentList;
+            }
         }
-        
     }
+  
+    /*  Change Member type button functionality End */ 
+    
+    
     /*
 @Description: Fetching active Membership record id
 @Param: String recordId => Passing the id of the contact.
@@ -266,47 +384,4 @@ return 'false';
         }
         return false;
     }
-    
-    /*
-@Description: When we click Cancel membership button Management Interface - Ask if they want to Revert the Financial also(Custom label). 
-If they yes than ONLY Void all invoices and schedule Payment.
-@Param: String contactId.
-@Return: 
-@Author: RSI*/
-    @AuraEnabled
-    public static Boolean updateInvoice_SchedulePayment(String contactId){
-        List<OrderApi__Invoice__c> updateInvoiceList = new  List<OrderApi__Invoice__c>();
-        List<OrderApi__Scheduled_Payment__c> updateschedulePaymentList = new  List<OrderApi__Scheduled_Payment__c>();
-        if(String.isNotBlank(contactId)){
-            List<OrderApi__Sales_Order__c> salesOrderList=[select id,(select id,OrderApi__Status__c from OrderApi__Invoices__r where OrderApi__Status__c='Draft') from OrderApi__Sales_Order__c where OrderApi__Contact__c=:contactId];
-            if(salesOrderList.size()>0){
-                for(OrderApi__Sales_Order__c so:salesOrderList){
-                    if(so.OrderApi__Invoices__r.size()>0){
-                        for(OrderApi__Invoice__c inv:so.OrderApi__Invoices__r){
-                            inv.OrderApi__Status__c='Voided';
-                            updateInvoiceList.add(inv);
-                        } 
-                    }
-                }
-            }
-            if(updateInvoiceList.size()>0){
-                Set<Id> invoiceIds= (new Map<Id,sObject>(updateInvoiceList)).keySet(); 
-                if(!invoiceIds.isEmpty()){
-                    List<OrderApi__Scheduled_Payment__c> schedulePaymentList = [select OrderApi__Is_Cancelled__c from OrderApi__Scheduled_Payment__c where OrderApi__Invoice__c in:invoiceIds];
-                    if(schedulePaymentList.size()>0){
-                        for(OrderApi__Scheduled_Payment__c sp:schedulePaymentList){
-                            sp.OrderApi__Is_Cancelled__c=true;         
-                            updateschedulePaymentList.add(sp);
-                        }
-                    }
-                }
-                update updateInvoiceList;
-                if(updateschedulePaymentList.size()>0){
-                    update updateschedulePaymentList;
-                }
-            }
-        }
-        return true;
-    }
-    
 }
