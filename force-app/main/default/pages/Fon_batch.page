@@ -1,0 +1,2 @@
+<apex:page Controller="Fon_batch" action="{!process}" >
+</apex:page>

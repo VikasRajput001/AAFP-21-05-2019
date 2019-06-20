@@ -55,11 +55,12 @@ public class Fon_SubscriptionPlanCtrl{
         return [select OrderApi__Item__c,OrderApi__Subscription_Plan__r.Name, OrderApi__Subscription_Plan__r.OrderApi__Enable_Schedule__c, 
                     OrderApi__Sales_Order_Line__r.name, OrderApi__Sales_Order_Line__r.OrderApi__Sales_Order__c FROM OrderApi__Subscription__c WHERE Id IN: subsriptionIdSet];
     }
-    
-     @AuraEnabled
-    public static list<OrderApi__Subscription_Plan__c> changeSubscriptionPlan(Id ContactId, Id OldsubPlanId,Id NewsubPlanId ){
-          list<OrderApi__Subscription_Plan__c> subscriptionPLan =  [select id,OrderApi__Enable_Schedule__c from OrderApi__Subscription_Plan__c where id=:OldsubPlanId];
-          
+    //@currentSubscriptionID => Main actvie 
+    @AuraEnabled
+    public static list<OrderApi__Subscription_Plan__c> changeSubscriptionPlan(Id ContactId, OrderApi__Subscription__c OldsubPlanId, Id NewsubPlanId){
+          OldsubPlanId.OrderApi__Subscription_Plan__c = NewsubPlanId;
+          update OldsubPlanId;
+          list<OrderApi__Subscription_Plan__c> subscriptionPLan =  [select id,OrderApi__Enable_Schedule__c from OrderApi__Subscription_Plan__c where id=:OldsubPlanId.Id];
           if(!subscriptionPLan.isEmpty()){
                 if(subscriptionPLan[0].OrderApi__Enable_Schedule__c){
                     changePlanInstallmentToFull(ContactId);

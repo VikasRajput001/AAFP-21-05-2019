@@ -35,7 +35,7 @@
         var action = component.get("c.changeSubscriptionPlan");
         action.setParams({
             ContactId : component.get("v.contactId"),
-            OldsubPlanId : component.get("v.objActiveSubscription").OrderApi__Subscription_Plan__c,
+            OldsubPlanId : component.get("v.objActiveSubscription"),
             NewsubPlanId : component.get("v.selectedSuscribePlanId")
         });
         action.setCallback(this,function(result){            

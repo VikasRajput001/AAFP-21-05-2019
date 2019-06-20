@@ -5,8 +5,6 @@ public class Fon_RefundCreditMemo {
     Set<Id> existingTransactionIds = new Set<Id>();
     List<OrderApi__Item__c> creditMemoRefundItem = new List<OrderApi__Item__c>();
     
-    
-    
     public Fon_RefundCreditMemo(ApexPages.StandardController controller){
         creditMemoRefundItem= [select id from OrderApi__Item__c where Name='Credit Memo Refund Item' And OrderApi__Is_Active__c=true];
         creditMemoId=controller.getId();//Current Record Id

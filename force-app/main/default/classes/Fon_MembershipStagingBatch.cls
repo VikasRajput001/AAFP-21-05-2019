@@ -1,6 +1,18 @@
 global class Fon_MembershipStagingBatch implements Database.Batchable<sObject>, Database.Stateful{
-
+    Set<Id> memberStageIdSet;
+    //Default Constructor
+    global Fon_MembershipStagingBatch(){
+    }
+    //Constructor
+    global Fon_MembershipStagingBatch(Set<Id> memberStageIdSet){
+        this.memberStageIdSet = memberStageIdSet;
+    }
+    //Batch Start Method
     global Database.QueryLocator start(Database.BatchableContext BC) {
+         if(memberStageIdSet != null){
+             return Database.getQueryLocator('SELECT Id,Fon_Staging_Status__c,Fon_Contact__c,Fon_Year__c,Fon_Membership_Activation_Date__c,Fon_PAC_Contribution_Information__c,'+
+                                           'Fon_Membership_Type__c,Fon_Subscription_Plan__c,Fon_ContactID__c,Fon_Payment_Method_Id__c,Fon_Join_Date__c FROM Fon_Membership_Staging__c WHERE Id IN :memberStageIdSet');
+         }
          return Database.getQueryLocator('SELECT Id,Fon_Staging_Status__c,Fon_Contact__c,Fon_Year__c,Fon_Membership_Activation_Date__c,Fon_PAC_Contribution_Information__c,'+
                                            'Fon_Membership_Type__c,Fon_Subscription_Plan__c,Fon_ContactID__c,Fon_Payment_Method_Id__c,Fon_Join_Date__c FROM Fon_Membership_Staging__c');
     }

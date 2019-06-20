@@ -1,12 +1,15 @@
 <aura:component controller="Fon_UploadCSV" access="GLOBAL" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:isUrlAddressable">
     <aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
     <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
-       <aura:attribute name="Spinner" type="boolean" default="false"/>
+    <aura:attribute name="Spinner" type="boolean" default="false"/>
     <aura:attribute name="disable" type="Boolean" Default="true"></aura:attribute>
     <aura:attribute name="parentId" type="Id" default="0016F000024nYzwQAE" />
     <aura:attribute name="showLoadingSpinner" type="boolean" default="false" />
     <aura:attribute name="fileName" type="String" default="No File Selected.." />
     <aura:attribute name="data" type="Fon_Membership_Staging__c[]" /> 
+    <aura:attribute name="objMembershipStage" type="sObject"/>
+    <aura:attribute name="mapKeyToColumnName" type="Map" />
+    
     
     <div style="border: 2px solid black;" class="slds-modal--large" aura:id="mainFrameDiv">
         <div class="custom-bg-color">	
@@ -44,5 +47,6 @@
             </div>
             <br/>
         </div>
+        
     </div>
 </aura:component>

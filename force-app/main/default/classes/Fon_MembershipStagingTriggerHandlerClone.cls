@@ -1,10 +1,5 @@
-public class Fon_MembershipStagingTriggerHandler{
-    /*
-        @Description: Filtering "Membership Stage" records based on "Staging Status" = "Approved",
-                        This is base function to perform further logic.
-        @Author: RSI
-    */
-    public void initializeMembershipStage(List<Fon_Membership_Staging__c> lstAllStaging){
+public class Fon_MembershipStagingTriggerHandlerClone {
+ public void initializeMembershipStage(List<Fon_Membership_Staging__c> lstAllStaging){
         List<Fon_Membership_Staging__c> lstApprovedMembershipStage = new List<Fon_Membership_Staging__c>();
         for(Fon_Membership_Staging__c objStage : lstAllStaging){
             if(objStage.Fon_Staging_Status__c == 'Approved'){
@@ -52,8 +47,8 @@ public class Fon_MembershipStagingTriggerHandler{
         for(OrderApi__Subscription_Plan__c eachSubscription : [SELECT Id,Name FROM OrderApi__Subscription_Plan__c WHERE Name IN:subscriptionPlanSet ]){
             mapNameToObjSubscriptionPlan.put(eachSubscription.Name,eachSubscription);
         }
-        Map<OrderApi__Sales_Order__c,OrderApi__Sales_Order__c> mapNewSOToInsertedSO = new Map<OrderApi__Sales_Order__c,OrderApi__Sales_Order__c>();
-        Map<OrderApi__Sales_Order__c,List<FDService.SalesOrderLine>> mapSOTolstSOLI = new Map<OrderApi__Sales_Order__c,List<FDService.SalesOrderLine>>();
+        Map<FDService.SalesOrder,FDService.SalesOrder> mapNewSOToInsertedSO = new Map<FDService.SalesOrder,FDService.SalesOrder>();
+        Map<FDService.SalesOrder,List<FDService.SalesOrderLine>> mapSOTolstSOLI = new Map<FDService.SalesOrder,List<FDService.SalesOrderLine>>();
         for(Fon_Membership_Staging__c eachMemberStaging : lstApprovedMembershipStage){
             mapSOTolstSOLI.put(instanceSalesOrder(eachMemberStaging),
                                                     instanceOfALLSalesOrderLineItem(eachMemberStaging,mapItemNameToObjItem,mapMemberShipIdToSetItemName,mapNameToObjSubscriptionPlan));
@@ -62,13 +57,14 @@ public class Fon_MembershipStagingTriggerHandler{
         insertingSalesOrderAndSOLI(mapSOTolstSOLI, mapNewSOToInsertedSO); //Implementing FD Service here
     }
     //Inserting Sales Order and Sales Order Line using FD Service
-    public void insertingSalesOrderAndSOLI(Map<OrderApi__Sales_Order__c,List<FDService.SalesOrderLine>> mapSOTolstSOLI, Map<OrderApi__Sales_Order__c,OrderApi__Sales_Order__c> mapNewSOToInsertedSO){
+    public void insertingSalesOrderAndSOLI(Map<FDService.SalesOrder,List<FDService.SalesOrderLine>> mapSOTolstSOLI, Map<FDService.SalesOrder,FDService.SalesOrder> mapNewSOToInsertedSO){
         if(!mapSOTolstSOLI.keySet().isEmpty()){
-            List<OrderApi__Sales_Order__c> lstNewSO = new List<OrderApi__Sales_Order__c>();
+            List<FDService.SalesOrder> lstNewSO = new List<FDService.SalesOrder>();
             lstNewSO.addALL(mapSOTolstSOLI.keySet());
-            insert mapNewSOToInsertedSO.values();                //This line of code will be updated by FD Sevice
+           // insert mapNewSOToInsertedSO.values(); 
+          //FDService.OrderService.getInstance().createOrder(lstNewSO);               //This line of code will be updated by FD Sevice
             List<FDService.SalesOrderLine> lstNewSOLI = new List<FDService.SalesOrderLine>();
-            for(OrderApi__Sales_Order__c objSalesOrder : mapSOTolstSOLI.keySet()){
+            for(FDService.SalesOrder objSalesOrder : mapSOTolstSOLI.keySet()){
                 if(mapSOTolstSOLI.get(objSalesOrder) != null){
                     for(FDService.SalesOrderLine eachSOLI : mapSOTolstSOLI.get(objSalesOrder)){
                         eachSOLI.salesOrder = mapNewSOToInsertedSO.get(objSalesOrder).Id;
@@ -78,24 +74,26 @@ public class Fon_MembershipStagingTriggerHandler{
             }
             //insert lstNewSOLI;              
             FDService.OrderService.getInstance().addItemsToOrder(lstNewSOLI); //FD Service Call
-            //List<OrderApi__Sales_Order__c> lstCloseSO = new List<OrderApi__Sales_Order__c>(); Not in use
+            //List<FDService.SalesOrder> lstCloseSO = new List<OrderApi__Sales_Order__c>(); Not in use
             //Close the Sales Order
-            for(OrderApi__Sales_Order__c eachSO : mapNewSOToInsertedSO.values()){
-                eachSO.OrderApi__Status__c = 'Closed';
+            for(FDService.SalesOrder eachSO : mapNewSOToInsertedSO.values()){
+                eachSO.status = 'Closed';
             }
             if(!mapNewSOToInsertedSO.values().isEmpty()){
-                update mapNewSOToInsertedSO.values();
+                //update mapNewSOToInsertedSO.values();
             }
         }
     }
     //Instantiating Sales Order Here
-    public OrderApi__Sales_Order__c instanceSalesOrder(Fon_Membership_Staging__c objMemberStage){
-        OrderApi__Sales_Order__c objSO = new OrderApi__Sales_Order__c();                            //This line of code will be updated by FD Sevice
-        objSO.OrderApi__Contact__c = objMemberStage.Fon_Contact__c;
-        objSO.OrderApi__Payment_Method__c = objMemberStage.Fon_Payment_Method_Id__c;
-        objSO.OrderApi__Posting_Entity__c = 'Receipt';
+    public FDService.SalesOrder instanceSalesOrder(Fon_Membership_Staging__c objMemberStage){
+        //OrderApi__Sales_Order__c objSO = new OrderApi__Sales_Order__c();  
+        //This line of code will be updated by FD Sevice
+        FDService.SalesOrder objSO = new FDService.SalesOrder();
+        objSO.contact = objMemberStage.Fon_Contact__c;
+        //objSO.paymentMethod = objMemberStage.Fon_Payment_Method_Id__c;
+        objSO.postingEntity = 'Receipt';
         if(!String.isBlank(objMemberStage.Fon_Payment_Method_Id__c)){
-            objSO.Fon_Process_Payment__c = true;
+            //objSO.Fon_Process_Payment__c = true;
         }
         return objSO;
     }

@@ -24,7 +24,7 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
     public static Map<String,String> cancelMembership(String recordId, String reason, Boolean isRevertFinancial){
         List<Fon_Membership_Staging__c> lstMember = [SELECT Id,Fon_Staging_Status__c FROM Fon_Membership_Staging__c WHERE Fon_Staging_Status__c =:strActive AND Fon_Contact__c =:recordId];
         for(Fon_Membership_Staging__c eachMember : lstMember){
-            eachMember.Fon_Staging_Status__c = strInactive;
+            eachMember.Fon_Staging_Status__c = strCancelled;
         }
         if(!lstMember.isEmpty()){
             if(isRevertFinancial){
@@ -34,7 +34,7 @@ public with sharing class Fon_MembershipManagementInterfaceCtrl{
                 updateSubscription(recordId);
             }
             update lstMember;
-            update new Contact(id=recordId,Fon_Current_Membership_Status__c=strInactive);
+            update new Contact(id=recordId,Fon_Current_Membership_Status__c=strCancelled);
         }
         else{
             mapKeyToMSG.put('isEmptyMember','true');

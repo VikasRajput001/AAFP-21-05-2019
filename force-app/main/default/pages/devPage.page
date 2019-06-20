@@ -1,0 +1,5 @@
+<apex:page standardController="OrderApi__Sales_Order__c" recordSetVar="so" >
+    <apex:form >
+        {!selected}
+    </apex:form>
+</apex:page>
